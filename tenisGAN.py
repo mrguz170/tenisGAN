@@ -205,7 +205,7 @@ def train():
     sess.run(tf.global_variables_initializer())
     sess.run(tf.local_variables_initializer())
     
-    dir = os.path.join('content/tenisGAN/restore')
+    dir = os.path.join('/content/tenisGAN/restore')
     
     saver = tf.train.import_meta_graph(dir + '/{}.meta'.format(checkP))
     saver.restore(sess, tf.train.latest_checkpoint(dir))
