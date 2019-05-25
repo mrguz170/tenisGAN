@@ -11,6 +11,9 @@ import random
 import scipy.misc
 from utils import *
 
+# ultimo checkpoiny
+checkP = 500
+
 slim = tf.contrib.slim
 
 HEIGHT, WIDTH, CHANNEL = 128, 128, 3
@@ -189,27 +192,38 @@ def train():
     # clip discriminator weights
     d_clip = [v.assign(tf.clip_by_value(v, -0.01, 0.01)) for v in d_vars]
 
-    
+
     batch_size = BATCH_SIZE
     image_batch, samples_num = process_data()
     
     batch_num = int(samples_num / batch_size)
     total_batch = 0
+
+    # continue training
     sess = tf.Session()
-    saver = tf.train.Saver()
+
     sess.run(tf.global_variables_initializer())
     sess.run(tf.local_variables_initializer())
-    # continue training
-    save_path = saver.save(sess, "/tmp/model.ckpt")
-    ckpt = tf.train.latest_checkpoint('./model/' + version)
-    saver.restore(sess, save_path)
+    
+    dir = os.path.join('./restore')
+    
+    saver = tf.train.import_meta_graph(dir + '/{}.meta'.format(checkP))
+    saver.restore(sess, tf.train.latest_checkpoint(dir))
+
+    #sess = tf.Session()
+    #saver = tf.train.Saver()
+    #
+    #save_path = saver.save(sess, "/content/restore/{}.meta")
+    # = tf.train.latest_checkpoint('./model/' + version)
+    #saver.restore(sess, save_path)
+
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
     print('total training sample num:%d' % samples_num)
     print('batch size: %d, batch num per epoch: %d, epoch num: %d' % (batch_size, batch_num, EPOCH))
     print('start training...')
-    for i in range(EPOCH):
+    for i in range(checkP, EPOCH):
         print("Running epoch {}/{}...".format(i, EPOCH))
         for j in range(batch_num):
             print(j)
