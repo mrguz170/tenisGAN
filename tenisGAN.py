@@ -246,7 +246,7 @@ def train():
             # print 'train:[%d/%d],d_loss:%f,g_loss:%f' % (i, j, dLoss, gLoss)
             
         # save check point every 500 epoch
-        if i%500 == 0:
+        if i%300 == 0:
             if not os.path.exists('./model/'):
                 os.makedirs('./model/')
             saver.save(sess, './model/' + str(i))
