@@ -1,5 +1,9 @@
 # tenisGAN
 
+Usando redes neuronales, especificamente modelos adversarios generativos(GAN) se crean imagenes de zapatos tenis. con diseños que no existen. 
+
+![](epoch500.jpg)
+
 ## Dependencies (pip install) 
 ```
 cv2
