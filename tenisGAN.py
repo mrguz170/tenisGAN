@@ -183,7 +183,6 @@ def train():
     d_loss = tf.reduce_mean(fake_result) - tf.reduce_mean(real_result)  # This optimizes the discriminator.
     g_loss = -tf.reduce_mean(fake_result)  # This optimizes the generator.
             
-
     t_vars = tf.trainable_variables()
     d_vars = [var for var in t_vars if 'dis' in var.name]
     g_vars = [var for var in t_vars if 'gen' in var.name]
@@ -191,7 +190,6 @@ def train():
     trainer_g = tf.train.RMSPropOptimizer(learning_rate=2e-4).minimize(g_loss, var_list=g_vars)
     # clip discriminator weights
     d_clip = [v.assign(tf.clip_by_value(v, -0.01, 0.01)) for v in d_vars]
-
 
     batch_size = BATCH_SIZE
     image_batch, samples_num = process_data()
@@ -201,28 +199,25 @@ def train():
 
     # continue training
     sess = tf.Session()
+    saver = tf.train.Saver()
 
     sess.run(tf.global_variables_initializer())
     sess.run(tf.local_variables_initializer())
-    
-    dir = os.path.join('/content/tenisGAN/restore')
-    
-    saver = tf.train.import_meta_graph(dir + '/{}.meta'.format(checkP))
-    saver.restore(sess, tf.train.latest_checkpoint(dir))
 
-    #sess = tf.Session()
-    #saver = tf.train.Saver()
-    #
-    #save_path = saver.save(sess, "/content/restore/{}.meta")
-    # = tf.train.latest_checkpoint('./model/' + version)
-    #saver.restore(sess, save_path)
+    
+    # continue training
+    save_path = saver.save(sess, "/restore/{}.meta".format(checkP))
+    ckpt = tf.train.latest_checkpoint('./restore')
+    saver.restore(sess, ckpt)
 
+    
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
     print('total training sample num:%d' % samples_num)
     print('batch size: %d, batch num per epoch: %d, epoch num: %d' % (batch_size, batch_num, EPOCH))
     print('start training...')
+
     for i in range(checkP, EPOCH):
         print("Running epoch {}/{}...".format(i, EPOCH))
         for j in range(batch_num):
@@ -231,6 +226,7 @@ def train():
             g_iters = 1
 
             train_noise = np.random.uniform(-1.0, 1.0, size=[batch_size, random_dim]).astype(np.float32)
+
             for k in range(d_iters):
                 print(k)
                 train_image = sess.run(image_batch)
@@ -251,9 +247,10 @@ def train():
             
         # save check point every 500 epoch
         if i%500 == 0:
-            if not os.path.exists('./model/' + version):
-                os.makedirs('./model/' + version)
-            saver.save(sess, './model/' +version + '/' + str(i))  
+            if not os.path.exists('./model/'):
+                os.makedirs('./model/')
+            saver.save(sess, './model/' + str(i))
+
         if i%50 == 0:
             # save images
             if not os.path.exists(newPoke_path):
@@ -265,9 +262,9 @@ def train():
             save_images(imgtest, [8,8] ,newPoke_path + '/epoch' + str(i) + '.jpg')
             
             print('train:[%d],d_loss:%f,g_loss:%f' % (i, dLoss, gLoss))
+
     coord.request_stop()
     coord.join(threads)
-
 
 # def test():
     # random_dim = 100
@@ -289,7 +286,36 @@ def train():
     # saver.restore(sess, ckpt)
 
 
+"""
+def prueba():
+    random_dim = 100
+
+    with tf.variable_scope('input'):
+        #real and fake image placholders
+        real_image = tf.placeholder(tf.float32, shape = [None, HEIGHT, WIDTH, CHANNEL], name='real_image')
+        random_input = tf.placeholder(tf.float32, shape=[None, random_dim], name='rand_input')
+        is_train = tf.placeholder(tf.bool, name='is_train')
+    
+    # wgan
+    fake_image = generator(random_input, random_dim, is_train)
+
+    sess = tf.Session()
+    saver = tf.train.Saver()
+    sess.run(tf.global_variables_initializer())
+    sess.run(tf.local_variables_initializer())
+
+     # continue training
+    save_path = saver.save(sess, "/restore/{}.meta".format(checkP))
+    ckpt = tf.train.latest_checkpoint('./restore')
+    saver.restore(sess, ckpt)
+
+    
+    sample_noise = np.random.uniform(-1.0, 1.0, size=[BATCH_SIZE, random_dim]).astype(np.float32)
+    imgtest = sess.run(fake_image, feed_dict={random_input: sample_noise, is_train: False})
+    save_images(imgtest, [8,8] ,newPoke_path + '/prueba' + 'p01' + '.jpg')
+"""
+
 if __name__ == "__main__":
     train()
-    # test()
-
+    #test()
+    #prueba()
