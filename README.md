@@ -2,7 +2,7 @@
 
 Usando redes neuronales, especificamente modelos adversarios generativos(GAN) que crean imagenes de zapatos tenis, los diseños generados no existen. 
 
-![](epoch500.jpg)
+![](epoch2000.jpg)
 
 ## Dependencies (pip install) 
 ```
